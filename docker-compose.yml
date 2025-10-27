@@ -1,8 +1,8 @@
 services:
-  close-exports-report:
+  tracking-parser:
     build: .
-    image: close-exports-report:latest
-    container_name: close-exports-report
+    image: tracking-parser:latest
+    container_name: tracking-parser
     restart: unless-stopped
     working_dir: /app
     environment:
