@@ -1,0 +1,9 @@
+secrets/
+.git/
+.gitignore
+README.md
+*.log
+__pycache__/
+*.pyc
+.venv/
+venv/

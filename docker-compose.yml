@@ -1,0 +1,19 @@
+services:
+  close-exports-report:
+    build: .
+    image: close-exports-report:latest
+    container_name: close-exports-report
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      - PYTHONUNBUFFERED=1  # Отключает буферизацию Python
+      - TZ=Europe/Moscow    # Устанавливаем часовой пояс
+    volumes:
+      - /opt/secrets:/secrets:ro
+      - ./logs:/app/logs  # Монтируем папку логов
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        compress: "true"

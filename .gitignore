@@ -1,0 +1,58 @@
+# Виртуальное окружение
+venv/
+env/
+.venv/
+secrets/.env/
+ENV/
+
+# Переменные окружения
+secrets/.env
+.env.local
+.env.production
+.env.development
+secrets/service_account.json
+
+# Кэш Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Распределенные файлы/пакеты
+*.egg
+*.egg-info
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Установочные пакеты
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Единицы тестирования
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Логи
+*.log
+
+# Системные файлы
+.DS_Store
+Thumbs.db
