@@ -13,4 +13,4 @@ params = {
 
 tg_handler = NotificationHandler('telegram', defaults=params)
 
-logger.add(tg_handler, level='CRITICAL')
+logger.add(tg_handler, level='INFO')
