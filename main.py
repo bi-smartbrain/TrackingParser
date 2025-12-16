@@ -22,15 +22,15 @@ def run_tracking():
     rubrain_url = 'https://rubrain.com/api/v2/report/manager/project-report/summary/'
     rubrain_result_spread = 'Парсинг тайм-трекинга Rubrain'
 
-    tracking_report(rubrain_url, 11, 2025, auth_token, rubrain_result_spread)
     tracking_report(rubrain_url, 12, 2025, auth_token, rubrain_result_spread)
+    tracking_report(rubrain_url, 1, 2026, auth_token, rubrain_result_spread)
 
     # --- Junbrain трекинг ---
     junbrain_url = 'https://junbrain.ru/api/v2/report/manager/project-report/summary/'
     junbrain_result_spread = 'Парсинг тайм-трекинга Junbrain'
 
-    tracking_report(junbrain_url, 11, 2025, auth_token, junbrain_result_spread)
     tracking_report(junbrain_url, 12, 2025, auth_token, junbrain_result_spread)
+    tracking_report(junbrain_url, 1, 2026, auth_token, junbrain_result_spread)
 
     print(dt.now())
 
