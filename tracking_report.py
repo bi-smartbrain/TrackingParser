@@ -27,7 +27,7 @@ def tracking_report(query_url, month, year, access_token, result_spread):
         'authorization': f'Bearer {access_token}',
         # 'cookie': '_ga=GA1.2.953492404.1725863733; _gid=GA1.2.1243740957.1725863733; _ym_uid=1725863733367004419; _ym_d=1725863733; _ym_isad=1; _ym_visorc=w; access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1ODY0MTI4LCJpYXQiOjE3MjU4NjM4MjgsImp0aSI6ImIxMzEyZThlMTcwMTRjZDY4ZjU1MmMzM2M0ZTJjZTAxIiwidXNlcl9pZCI6MjI5Mn0.sF6Jj87SqfMChhb8LoRwTnldVCx1OofrlDc2-gVtLwk; refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcyODQ1NTgyOCwiaWF0IjoxNzI1ODYzODI4LCJqdGkiOiIzM2Q4MWE3OTg2YTY0OTkzYmMxYzg5OGZhYmVjYzE1MSIsInVzZXJfaWQiOjIyOTJ9.jNG1oChTYSkR9iz-cgXsq8IHICmP6YJpmjKtzzEKdEg; token_expires_at=2024-09-09T09%3A42%3A08%2B03%3A00; refresh_token_expires_at=%222024-10-09T06%3A37%3A08.701Z%22; rb-can-use=1; _gat_UA-62963573-1=1; _ga_DNPXG3ZVNV=GS1.2.1725863733.1.1.1725863843.60.0.0',
         'priority': 'u=1, i',
-        'referer': 'https://rubrain.com/account/managers/time-tracking?month=2024-08-03&status=notReport&status=overtime',
+        'referer': 'https://smartbrain.io/account/managers/time-tracking?month=2024-08-03&status=notReport&status=overtime',
         'sec-ch-ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
@@ -86,7 +86,7 @@ def tracking_report(query_url, month, year, access_token, result_spread):
                 if record['files']:
                     files_urls = ''
                     for file in record['files']:
-                        files_urls += '\nhttps://rubrain.com' + file['file']
+                        files_urls += '\nhttps://smartbrain.io' + file['file']
                     tracking_record.append(record['description'] + ' - ' + str(record['hours']) + 'h.' + files_urls)
                 else:
                     tracking_record.append(record['description'] + ' - ' + str(record['hours']) + 'h.')

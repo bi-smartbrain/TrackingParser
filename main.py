@@ -43,7 +43,9 @@ def run_tracking():
     auth_token = get_tokens()['access']
 
     # --- Rubrain трекинг ---
-    rubrain_url = 'https://rubrain.com/api/v2/report/manager/project-report/summary/'
+    # smartbrain.io — англоязычный клон rubrain.com, тот же бэкенд/БД.
+    # Переехали с rubrain.com: он периодически недоступен и рушит весь цикл.
+    rubrain_url = 'https://smartbrain.io/api/v2/report/manager/project-report/summary/'
     rubrain_spread = 'Парсинг тайм-трекинга Rubrain'
     cfg_r = load_sheet_config(rubrain_spread)
     months_r = [int(m.strip()) for m in cfg_r.get("MONTHS", "").split(",") if m.strip().isdigit()]
