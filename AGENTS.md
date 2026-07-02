@@ -35,7 +35,7 @@ TrackingParser — сервис автоматического парсинга 
 ### get_tokens.py
 - `get_tokens(username, password, url)` — логинится на платформе, возвращает `access` и `refresh` токены.
 - Credentials берутся из `.env`: `SITE_USERNAME`, `SITE_PASSWORD`.
-- Авторизуется на `smartbrain.io` (англоязычный клон rubrain.com, тот же бэкенд/БД) — токен работает и для `junbrain.ru` (общая платформа).
+- Авторизуется на `rubrain.com` — токен работает и для `junbrain.ru` (общая платформа).
 
 ### tg_logger.py
 - Loguru-логгер с хендлером Telegram (`notifiers`).

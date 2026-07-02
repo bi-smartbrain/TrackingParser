@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 def get_tokens(
         username=os.getenv("SITE_USERNAME"),
         password=os.getenv("SITE_PASSWORD"),
-        url="https://smartbrain.io/api/auth/login/?active_lang=ru"):
+        url="https://rubrain.com/api/auth/login/?active_lang=ru"):
 
     response = requests.post(url, json={
         'email': username,
