@@ -21,6 +21,7 @@ TrackingParser — сервис автоматического парсинга 
 - `load_sheet_config(spreadsheet_name)` — читает лист `config` из спредшита, возвращает dict.
 - **Hot-reload**: конфиг читается при каждом вызове `run_tracking()`. Чтобы изменения вступили в силу — просто обнови лист `config` в нужном спредшите. Перезапуск не нужен.
 - Интервалы: `SUCCESS_DELAY_MINUTES = 20`, `RETRY_DELAY_MINUTES = 5`.
+- **Дебаунс критических уведомлений**: `FAILURE_ALERT_THRESHOLD = 5` — критическое сообщение в Telegram (`logger.critical`) шлётся не на каждый сбой, а раз в 5 подряд неудачных попыток. Промежуточные сбои логируются через `print()` (видно в `docker logs`, но не спамит телеграм). Добавлено после инцидента с нестабильным бэкендом Rubrain/Junbrain 26-27 сентября 2026, когда каждый retry слал отдельный critical-алерт.
 
 ### tracking_report.py
 - `tracking_report(query_url, month, year, access_token, result_spread)` — делает HTTP-запрос к API платформы, парсит ответ, записывает в Google Sheets.

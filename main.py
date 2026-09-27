@@ -12,6 +12,10 @@ RETRY_DELAY_MINUTES = 5
 # Интервал в минутах между успешными обходами
 SUCCESS_DELAY_MINUTES = 20
 
+# Сколько подряд неудачных попыток нужно накопить, прежде чем слать критическое
+# уведомление в Telegram (дебаунс: не спамить на каждый одиночный сбой)
+FAILURE_ALERT_THRESHOLD = 5
+
 
 def load_sheet_config(spreadsheet_name: str) -> dict:
     """Читает лист 'config' из указанного спредшита. Возвращает dict key->value.
@@ -65,29 +69,31 @@ def run_tracking():
     print(dt.now())
 
 
-def main():
-    """
-    Основной цикл работы скрипта.
-    """
-    while True:
-        run_tracking()
-        time.sleep(60 * SUCCESS_DELAY_MINUTES)  # Пауза между успешными обходами
-
-
 def run_with_restart_on_fail():
     """
-    Обёртка для main(), перезапускает основной цикл при ошибках с задержкой в N минут.
-    Уведомляет через логгер о критической ошибке.
+    Основной цикл: перезапускает трекинг при ошибках с задержкой в N минут.
+    Дебаунс: критическое уведомление в Telegram шлётся не на каждый сбой,
+    а раз в FAILURE_ALERT_THRESHOLD подряд неудачных попыток — иначе при
+    нестабильном внешнем API телеграм заваливает одинаковыми алертами.
     """
+    consecutive_failures = 0
     while True:
         try:
-            main()
+            run_tracking()
+            consecutive_failures = 0
+            time.sleep(60 * SUCCESS_DELAY_MINUTES)  # Пауза между успешными обходами
         except Exception as e:
-            # Отправка критической ошибки в Telegram
-            logger.critical(f"AutoTrackingReport, ошибка: {str(e)}")
+            consecutive_failures += 1
+            if consecutive_failures % FAILURE_ALERT_THRESHOLD == 0:
+                # Отправка критической ошибки в Telegram
+                logger.critical(
+                    f"AutoTrackingReport, ошибка повторяется {consecutive_failures}-й раз подряд: {e}"
+                )
+            else:
+                print(f"AutoTrackingReport, ошибка ({consecutive_failures}/{FAILURE_ALERT_THRESHOLD}): {e}")
             # Ждём N минут перед повторным запуском
             time.sleep(60 * RETRY_DELAY_MINUTES)
-            logger.info(f"AutoTrackingReport, перезапуск скрипта..")
+            print("AutoTrackingReport, перезапуск скрипта..")
 
 
 if __name__ == "__main__":
