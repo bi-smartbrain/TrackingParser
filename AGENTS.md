@@ -116,7 +116,7 @@ set -e
 cd /opt/TrackingParser
 git fetch origin main
 git reset --hard origin/main
-docker-compose up -d --build --remove-orphans
+docker compose up -d --build --remove-orphans
 docker image prune -f
 docker builder prune -f --filter "until=168h"
 cp scripts/update_TrackingParser.sh /opt/auto/update_TrackingParser.sh
