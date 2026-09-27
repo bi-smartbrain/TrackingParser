@@ -75,19 +75,29 @@ def run_with_restart_on_fail():
     Дебаунс: критическое уведомление в Telegram шлётся не на каждый сбой,
     а раз в FAILURE_ALERT_THRESHOLD подряд неудачных попыток — иначе при
     нестабильном внешнем API телеграм заваливает одинаковыми алертами.
+    Если критический алерт уже уходил, при следующем успешном цикле шлётся
+    одноразовое уведомление о восстановлении.
     """
     consecutive_failures = 0
+    alert_sent = False
     while True:
         try:
             run_tracking()
+            if alert_sent:
+                logger.info(
+                    f"✅ AutoTrackingReport: сервис восстановился, трекинг снова работает "
+                    f"(было {consecutive_failures} сбоев подряд)"
+                )
+                alert_sent = False
             consecutive_failures = 0
             time.sleep(60 * SUCCESS_DELAY_MINUTES)  # Пауза между успешными обходами
         except Exception as e:
             consecutive_failures += 1
             if consecutive_failures % FAILURE_ALERT_THRESHOLD == 0:
+                alert_sent = True
                 # Отправка критической ошибки в Telegram
                 logger.critical(
-                    f"AutoTrackingReport, ошибка повторяется {consecutive_failures}-й раз подряд: {e}"
+                    f"❌ AutoTrackingReport: ошибка повторяется {consecutive_failures}-й раз подряд: {e}"
                 )
             else:
                 print(f"AutoTrackingReport, ошибка ({consecutive_failures}/{FAILURE_ALERT_THRESHOLD}): {e}")
