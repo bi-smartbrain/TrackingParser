@@ -1,10 +1,19 @@
 from pprint import pprint
 
-import requests, csv
+import csv
 from functions import write_spread_sheet, format_range_to_date, convert_to_google_date
 
 
-def tracking_report(query_url, month, year, access_token, result_spread):
+def tracking_report(query_url, month, year, access_token, result_spread, client, relogin=None):
+    """Тянет отчёт за месяц и пишет его в Google Sheets.
+
+    client — http_client.RetryClient, общий на прогон (ретраи, keep-alive, предохранитель).
+    relogin — callable без аргументов, возвращает свежий access-токен; вызывается один раз, если
+    API ответил 401 (токен живёт ~5 минут, а ретраи могут растянуть прогон).
+
+    Лист очищается в write_spread_sheet, поэтому запись — только после того, как данные полностью
+    получены и разобраны: любая ошибка раньше оставляет лист нетронутым.
+    """
     cookies = {
         '_ga': 'GA1.2.953492404.1725863733',
         '_gid': 'GA1.2.1243740957.1725863733',
@@ -45,13 +54,18 @@ def tracking_report(query_url, month, year, access_token, result_spread):
 
     sheet = f"{params['month']}-{params['year']}"
 
+    def reauth():
+        headers['authorization'] = f'Bearer {relogin()}'
+        return {'headers': headers}
+
     object = None
     # try:
-    response = requests.get(
+    response = client.get(
         query_url,
         params=params,
         cookies=cookies,
         headers=headers,
+        on_unauthorized=reauth if relogin else None,
     )
     response.raise_for_status()
     object = response.json()

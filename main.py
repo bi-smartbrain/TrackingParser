@@ -2,8 +2,10 @@ from tracking_report import tracking_report
 from functions import gc
 import time
 from datetime import datetime as dt
+from urllib.parse import urlparse
 from tg_logger import logger
 from get_tokens import get_tokens
+from http_client import RetryClient, DomainUnavailable
 
 
 # Интервал в минутах между попытками при ошибке
@@ -39,33 +41,73 @@ def load_sheet_config(spreadsheet_name: str) -> dict:
         return {}
 
 
+class TrackingRunFailed(Exception):
+    """Агрегированная ошибка прогона: в одном прогоне пробуем всё, что можно, а сбои собираем сюда,
+    чтобы дебаунс в run_with_restart_on_fail работал как раньше."""
+
+
+def _describe(e: Exception) -> str:
+    return f"{type(e).__name__}: {str(e)[:300]}"
+
+
+def _run_platform(name, url, spread, auth, relogin, client, errors):
+    """Один домен: свой конфиг, свои месяцы; сбой месяца не мешает остальным месяцам и домену."""
+    try:
+        cfg = load_sheet_config(spread)
+        months = [int(m.strip()) for m in cfg.get("MONTHS", "").split(",") if m.strip().isdigit()]
+        year = int(cfg.get("YEAR", dt.now().year))
+        print(f"[config] {name}: months={months}, year={year}")
+    except Exception as e:
+        errors.append(f"{name}: конфиг: {_describe(e)}")
+        return
+
+    for i, month in enumerate(months):
+        try:
+            tracking_report(url, month, year, auth['access'], spread, client=client, relogin=relogin)
+        except DomainUnavailable:
+            errors.append(f"{name}: домен {urlparse(url).hostname} недоступен в этом прогоне, "
+                          f"пропущены месяцы {months[i:]}")
+            return
+        except Exception as e:
+            errors.append(f"{name} {month}-{year}: {_describe(e)}")
+
+
 def run_tracking():
     """
     Основная логика трекинга отчётов.
     Месяцы и год берутся из листа 'config' в каждом спредшите (hot-reload).
+
+    Домены и месяцы изолированы: сбой одного не мешает остальным. Ошибки собираются и в конце
+    кидаются одним TrackingRunFailed. На каждый прогон — один RetryClient (keep-alive на домен,
+    ретраи каждого запроса, предохранитель), в конце печатается строка сводки (RUB-3245).
     """
-    auth_token = get_tokens()['access']
+    errors = []
+    client = RetryClient()
+    try:
+        try:
+            auth = {'access': get_tokens(client=client)['access']}
+        except Exception as e:
+            errors.append(f"логин: {_describe(e)}")
+        else:
+            def relogin():
+                auth['access'] = get_tokens(client=client)['access']
+                return auth['access']
 
-    # --- Rubrain трекинг ---
-    rubrain_url = 'https://rubrain.com/api/v2/report/manager/project-report/summary/'
-    rubrain_spread = 'Парсинг тайм-трекинга Rubrain'
-    cfg_r = load_sheet_config(rubrain_spread)
-    months_r = [int(m.strip()) for m in cfg_r.get("MONTHS", "").split(",") if m.strip().isdigit()]
-    year_r = int(cfg_r.get("YEAR", dt.now().year))
-    print(f"[config] Rubrain: months={months_r}, year={year_r}")
-    for month in months_r:
-        tracking_report(rubrain_url, month, year_r, auth_token, rubrain_spread)
+            # --- Rubrain трекинг ---
+            rubrain_url = 'https://rubrain.com/api/v2/report/manager/project-report/summary/'
+            rubrain_spread = 'Парсинг тайм-трекинга Rubrain'
+            _run_platform('Rubrain', rubrain_url, rubrain_spread, auth, relogin, client, errors)
 
-    # --- Junbrain трекинг ---
-    junbrain_url = 'https://junbrain.ru/api/v2/report/manager/project-report/summary/'
-    junbrain_spread = 'Парсинг тайм-трекинга Junbrain'
-    cfg_j = load_sheet_config(junbrain_spread)
-    months_j = [int(m.strip()) for m in cfg_j.get("MONTHS", "").split(",") if m.strip().isdigit()]
-    year_j = int(cfg_j.get("YEAR", dt.now().year))
-    print(f"[config] Junbrain: months={months_j}, year={year_j}")
-    for month in months_j:
-        tracking_report(junbrain_url, month, year_j, auth_token, junbrain_spread)
+            # --- Junbrain трекинг ---
+            junbrain_url = 'https://junbrain.ru/api/v2/report/manager/project-report/summary/'
+            junbrain_spread = 'Парсинг тайм-трекинга Junbrain'
+            _run_platform('Junbrain', junbrain_url, junbrain_spread, auth, relogin, client, errors)
+    finally:
+        print(client.summary())
+        client.close()
 
+    if errors:
+        raise TrackingRunFailed('; '.join(errors))
     print(dt.now())
 
 

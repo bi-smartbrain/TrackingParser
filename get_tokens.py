@@ -1,4 +1,3 @@
-import requests
 import os
 from dotenv import load_dotenv
 
@@ -6,9 +5,11 @@ from dotenv import load_dotenv
 def get_tokens(
         username=os.getenv("SITE_USERNAME"),
         password=os.getenv("SITE_PASSWORD"),
-        url="https://smartbrain.io/api/auth/login/?active_lang=ru"):
-
-    response = requests.post(url, json={
+        url="https://smartbrain.io/api/auth/login/?active_lang=ru",
+        *,
+        client):
+    """Логинится на платформе. client — http_client.RetryClient (ретраи, таймауты, keep-alive)."""
+    response = client.post(url, json={
         'email': username,
         'password': password
     })
